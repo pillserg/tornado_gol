@@ -41,6 +41,9 @@ class World(object):
         self.cells = new_world
         self.age += 1
 
+    def mutate(self, mutant_cell):
+        self.cells[mutant_cell['y']][mutant_cell['x']] = mutant_cell['active']
+
     def dump_world(self):
         return json.dumps(self.cells)
 

@@ -3,43 +3,12 @@
 <head>
   <title>tornado WebSocket example</title>
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="static/style.css">
+
+  <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-  <style>
-    body            { font-family: sans-serif; background: #eee; }
-    a, h1, h2       { color: #377ba8; }
-    h1, h2          { font-family: 'Georgia', serif; margin: 0; }
-    h1              { border-bottom: 2px solid #eee; }
-    h2              { font-size: 1.2em; }
+  <script type="text/javascript" src="/static/script.js"></script>
 
-    .page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
-                      padding: 0.8em; background: white; }
-
-
-    .cell {
-        width: 8px;
-        height: 8px;
-        background: white;
-        border: 1px solid gainsboro;
-    }
-
-    .cell.active {background: black}
-    .cell:hover {
-        border: 1px solid chartreuse;
-        cursor: cell;
-    }
-
-    #world {
-        border-collapse: collapse;
-        border: 1px solid gainsboro;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .center {
-        margin-left: auto;
-        margin-right: auto;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -52,58 +21,7 @@
   </div>
 
   <script>
-    (function () {
-      var ws = new WebSocket('ws://localhost:8888/ws'),
-          $message = $('#message'),
-          $evolve_btn = $('#evolve'),
-          $reset_btn = $('#reset');
 
-      $evolve_btn.click(function (ev) {ws.send('evolve');});
-      $reset_btn.click(function (ev) {ws.send('reset');});
-
-      ws.onopen = function () {
-        $message.attr("class", 'label label-success');
-        $message.text('open');
-      };
-
-      ws.onmessage = function (ev) {
-        $message.attr("class", 'label label-info');
-        $message.hide();
-        $message.fadeIn("slow");
-        $message.text('recieved message');
-        var json = JSON.parse(ev.data);
-        console.log(json);
-        redraw_world(json)
-      };
-
-      ws.onclose = function (ev) {
-        $message.attr("class", 'label label-important');
-        $message.text('closed');
-      };
-
-      ws.onerror = function (ev) {
-        $message.attr("class", 'label label-warning');
-        $message.text('error occurred');
-      };
-
-      var redraw_world = function(json){
-        $('#world').remove();
-        $world = $('<table id="world">');
-        for(var y = 0;y < json.length; y++){
-          var $row = $('<tr>')
-          for(var x = 0;x < json.length; x++){
-            if(json[y][x]){
-              $row.append($('<td class="cell active"/>'))
-            } else {
-              $row.append($('<td class="cell"/>'))
-            }
-
-          }
-          $world.append($row)
-        }
-        $('.container').append($world)
-      }
-    })();
   </script>
 </body>
 </html>

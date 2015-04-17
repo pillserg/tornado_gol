@@ -1,14 +1,19 @@
-from tornado import websocket, web, ioloop
+from functools import partial
+import json
+import logging
+from tornado import websocket, web, ioloop, gen
 from logging import getLogger
+
 
 from game import World, SIMPLE_PLANER
 
 
 log = getLogger(__name__)
+logging.basicConfig()
 log.setLevel('DEBUG')
 
 clients = []
-width = height = 10
+width = height = 20
 INTERVAL = 5
 
 
@@ -24,10 +29,15 @@ class SocketHandler(websocket.WebSocketHandler):
 
     def on_message(self, message):
         log.info("got message: {0}".format(message))
-        if message == 'evolve':
+        data = json.loads(message)
+        action = data.get('action')
+        data = data.get('data', {})
+        if action == 'evolve':
             ioloop.IOLoop.instance().add_callback(evolve_world, world=world, clients=clients)
-        if message == 'reset':
+        if action == 'reset':
             ioloop.IOLoop.instance().add_callback(reset_world, world=world, clients=clients)
+        if action == 'set_cell':
+            ioloop.IOLoop.instance().add_callback(evolve_world, world=world, clients=clients, mutant_cell=data)
 
     def open(self):
         if self not in clients:
@@ -39,30 +49,52 @@ class SocketHandler(websocket.WebSocketHandler):
             clients.remove(self)
 
 
-def evolve_world(world, clients):
+@gen.coroutine
+def send_msg(client, msg):
+    client.write_message(msg)
+
+
+@gen.coroutine
+def evolve_world(world, clients, mutant_cell=None):
     log.info('Evolving world, age: {0}'.format(world.age))
+    if mutant_cell:
+        world.mutate(mutant_cell)
+
     world.evolve()
+
     for client in clients:
-        client.write_message(world.dump_world())
+        yield send_msg(client, world.dump_world())
 
 
+@gen.coroutine
 def reset_world(world, clients):
-    log.info('Reseting world, age: {0}'.format(world.age))
-    world.reset_world()
+    log.info('Reseting world at age: {0}'.format(world.age))
+    yield world.reset_world()
     for client in clients:
-        client.write_message(world.dump_world())
+        yield client.write_message(world.dump_world())
 
 
 handlers = [
     (r'/', IndexHandler),
     (r'/ws', SocketHandler),
-    (r'/(favicon.ico)', web.StaticFileHandler, {'path': '../'}),
-    (r'/(rest_api_example.png)', web.StaticFileHandler, {'path': './'})
+    (r'/static/(.*)', web.StaticFileHandler, {'path': './'}),
 ]
 
 
 if __name__ == '__main__':
-    app = web.Application(handlers)
-    app.listen(8888)
+    app = web.Application(handlers, debug=True, autoreload=True)
+    port = 8888
+    app.listen(port)
+    loop = ioloop.IOLoop.instance()
     world = World(width=width, height=height, alive_cells=SIMPLE_PLANER)
-    ioloop.IOLoop.instance().start()
+    log.info('Starting world at age {0}, listening at {1}'.format(world.age, port))
+
+    period_cbk = ioloop.PeriodicCallback(partial(evolve_world, world, clients), 500, loop)
+    period_cbk.start()
+
+    loop.start()
+
+
+
+
+
