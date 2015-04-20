@@ -5,6 +5,28 @@ $(document).ready(function () {
         canvas = document.getElementById('Canvas'),
         ctx = canvas.getContext('2d');
 
+    var Person = Backbone.Model.extend({
+        defaults: {
+            name: 'Fetus',
+            age: 0,
+            child: ''
+        },
+        initialize: function(){
+            console.log("Welcome to this world");
+            this.on("change:name", function(model){
+                var name = model.get("name");
+                console.log("Changed my name to " + name)
+            });
+        },
+        adopt: function(newChildsName){
+            this.set({child: newChildsName});
+        }
+
+    });
+
+    var person = new Person({name: 'Thomas', age: 67});
+    person.set({name: "Stewie Griffin"});
+
     $('#evolve').click(function (ev) {ws.send(JSON.stringify({action: 'evolve'}));});
     $('#reset').click(function (ev) {ws.send(JSON.stringify({action: 'reset'}));});
     $('#start').click(function (ev) {ws.send(JSON.stringify({action: 'start'}));});
@@ -42,6 +64,12 @@ $(document).ready(function () {
         }
     };
 
+    $(canvas).click(function(event){
+        var coords = canvas.relMouseCoords(event);
+        var x = parseInt(coords.x/SIZE);
+        var y = parseInt(coords.y/SIZE);
+
+    });
 
     $('body').on('click', '#world .cell', function (ev) {
         var $cell = $(this);
