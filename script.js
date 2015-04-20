@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var SIZE = 3;
-    var ws = new WebSocket('ws://localhost:8888/ws'),
+    var ws = new SockJS('http://localhost:8888/ws'),
         $message = $('#message'),
         canvas = document.getElementById('Canvas'),
         ctx = canvas.getContext('2d');
