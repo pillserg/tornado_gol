@@ -6,6 +6,7 @@ from logging import getLogger
 
 
 from game import World, SIMPLE_PLANER
+from gardens import parse_garder, BLINKER_SHIP, BUNNIES
 
 
 log = getLogger(__name__)
@@ -13,7 +14,8 @@ logging.basicConfig()
 log.setLevel('DEBUG')
 
 clients = []
-width = height = 20
+width = 100
+height = 200
 INTERVAL = 5
 
 
@@ -32,12 +34,19 @@ class SocketHandler(websocket.WebSocketHandler):
         data = json.loads(message)
         action = data.get('action')
         data = data.get('data', {})
+
         if action == 'evolve':
             ioloop.IOLoop.instance().add_callback(evolve_world, world=world, clients=clients)
         if action == 'reset':
             ioloop.IOLoop.instance().add_callback(reset_world, world=world, clients=clients)
         if action == 'set_cell':
             ioloop.IOLoop.instance().add_callback(evolve_world, world=world, clients=clients, mutant_cell=data)
+        if action == 'start':
+            world.start()
+        if action == 'pause':
+            world.pause()
+        if action == 'random':
+            world.populate_random()
 
     def open(self):
         if self not in clients:
@@ -56,7 +65,6 @@ def send_msg(client, msg):
 
 @gen.coroutine
 def evolve_world(world, clients, mutant_cell=None):
-    log.info('Evolving world, age: {0}'.format(world.age))
     if mutant_cell:
         world.mutate(mutant_cell)
 
@@ -88,13 +96,7 @@ if __name__ == '__main__':
     loop = ioloop.IOLoop.instance()
     world = World(width=width, height=height, alive_cells=SIMPLE_PLANER)
     log.info('Starting world at age {0}, listening at {1}'.format(world.age, port))
-
-    period_cbk = ioloop.PeriodicCallback(partial(evolve_world, world, clients), 500, loop)
+    period_cbk = ioloop.PeriodicCallback(partial(evolve_world, world, clients), 100, loop)
     period_cbk.start()
-
     loop.start()
-
-
-
-
 

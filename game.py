@@ -1,4 +1,5 @@
 import json
+from random import choice
 
 ALIVE = 1
 DEAD = 0
@@ -13,6 +14,7 @@ class World(object):
         self.initial_active_cells = alive_cells or []
         self.cells = []
         self._populate()
+        self.state = 'alive'
 
     def _populate(self):
         self.cells = [([0] * self.width) for _ in range(self.height)]
@@ -35,6 +37,9 @@ class World(object):
             return DEAD
 
     def evolve(self):
+        if self.state == DEAD:
+            return
+
         new_world = []
         for row_num, row in enumerate(self.cells):
             new_world.append([self._decide_fate(cell, cell_num, row_num) for cell_num, cell in enumerate(row)])
@@ -49,3 +54,16 @@ class World(object):
 
     def reset_world(self):
         self._populate()
+
+    def start(self):
+        self.state = ALIVE
+
+    def pause(self):
+        self.state = DEAD
+
+    def populate_random(self):
+        new_world = []
+        for row_num, row in enumerate(self.cells):
+            new_world.append([choice([ALIVE, DEAD]) for cell in row])
+        self.cells = new_world
+        self.age += 1

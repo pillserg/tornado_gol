@@ -1,15 +1,15 @@
 $(document).ready(function () {
+    var SIZE = 3;
     var ws = new WebSocket('ws://localhost:8888/ws'),
         $message = $('#message'),
-        $evolve_btn = $('#evolve'),
-        $reset_btn = $('#reset');
+        canvas = document.getElementById('Canvas'),
+        ctx = canvas.getContext('2d');
 
-    $evolve_btn.click(function (ev) {
-        ws.send(JSON.stringify({action: 'evolve'}));
-    });
-    $reset_btn.click(function (ev) {
-        ws.send(JSON.stringify({action: 'reset'}));
-    });
+    $('#evolve').click(function (ev) {ws.send(JSON.stringify({action: 'evolve'}));});
+    $('#reset').click(function (ev) {ws.send(JSON.stringify({action: 'reset'}));});
+    $('#start').click(function (ev) {ws.send(JSON.stringify({action: 'start'}));});
+    $('#pause').click(function (ev) {ws.send(JSON.stringify({action: 'pause'}));});
+    $('#random').click(function (ev) {ws.send(JSON.stringify({action: 'random'}));});
 
     ws.onopen = function () {
         $message.attr("class", 'label label-success');
@@ -31,24 +31,17 @@ $(document).ready(function () {
     };
 
     var redraw_world = function (json) {
-        $('#world').remove();
-
-        var cell_template = _.template('<td class="cell <%= active %>" data-x="<%= x %>" data-y="<%= y %>">'),
-            $world = $('<table id="world">');
-
+        canvas.height = (json.length + 1) * SIZE;
+        canvas.width = (json[0].length + 1) * SIZE;
         for (var y = 0; y < json.length; y++) {
-            var $row = $('<tr>');
             for (var x = 0; x < json.length; x++) {
-                $row.append($(cell_template({
-                    active: json[y][x] ? 'active' : '',
-                    x: x,
-                    y: y
-                })))
+                var is_alive = json[y][x];
+                ctx.fillStyle = "#FF0000";
+                is_alive ? ctx.fillRect(x * SIZE, y * SIZE, SIZE, SIZE) : ctx.clearRect(x * SIZE, y * SIZE, SIZE, SIZE)
             }
-            $world.append($row)
         }
-        $('.container').append($world)
     };
+
 
     $('body').on('click', '#world .cell', function (ev) {
         var $cell = $(this);
