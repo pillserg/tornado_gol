@@ -1,13 +1,12 @@
 from functools import partial
 import json
 import logging
-from tornado import websocket, web, ioloop, gen
 
+from tornado import web, ioloop
 from sockjs.tornado import SockJSRouter, SockJSConnection
 
-
-from game import World, SIMPLE_PLANER
-from gardens import parse_garder, BLINKER_SHIP, BUNNIES
+from game import World
+from gardens import SIMPLE_PLANER
 
 
 log = logging.getLogger(__name__)
@@ -15,8 +14,8 @@ logging.basicConfig()
 log.setLevel('DEBUG')
 
 clients = []
-width = 100
-height = 200
+width = 200
+height = 50
 INTERVAL = 5
 
 
@@ -68,9 +67,7 @@ def evolve_world(world, clients, mutant_cell=None):
         world.mutate(mutant_cell)
 
     world.evolve()
-
-    for client in clients:
-        send_msg(client, world.dump_world())
+    clients and clients[0].broadcast(clients, world.dump_world())
 
 
 def reset_world(world, clients):
@@ -93,7 +90,7 @@ if __name__ == '__main__':
     loop = ioloop.IOLoop.instance()
     world = World(width=width, height=height, alive_cells=SIMPLE_PLANER)
     log.info('Starting world at age {0}, listening at {1}'.format(world.age, port))
-    period_cbk = ioloop.PeriodicCallback(partial(evolve_world, world, clients), 500, loop)
+    period_cbk = ioloop.PeriodicCallback(partial(evolve_world, world, clients), 250, loop)
     period_cbk.start()
     loop.start()
 

@@ -26,7 +26,12 @@
     <button id="pause">Pause</button>
 
     <hr class="clear"/>
-    <canvas class="center" id="Canvas" width="300" height="300" style=""></canvas>
+    <div class='center' style="position: relative;">
+      <canvas id="Canvas" width="1" height="1"
+        style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+      <canvas id="CanvasOverlay" width="1" height="1"
+        style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+    </div>
   </div>
 
   <script>

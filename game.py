@@ -3,7 +3,6 @@ from random import choice
 
 ALIVE = 1
 DEAD = 0
-SIMPLE_PLANER = [(4, 1), (2, 2), (4, 2), (3, 3), (4, 3)]
 
 
 class World(object):
