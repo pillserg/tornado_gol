@@ -1,6 +1,6 @@
 $(document).ready(function () {
-
-    var get_ev_coords_on_canvas = function(event, canvas){
+    var WORLD = [];
+    var get_ev_coords_on_canvas = function (event, canvas) {
         var coords = canvas.relMouseCoords(event);
         return {
             x: parseInt(coords.x / SIZE),
@@ -8,24 +8,42 @@ $(document).ready(function () {
         }
     };
 
-    var draw_with_cleanup = function(c, color, delay){
-        
+    var draw_with_cleanup = function (c, coords, color, delay) {
+        c.fillStyle = color;
+        c.fillRect(coords.x * SIZE, coords.y * SIZE, SIZE, SIZE);
+        setTimeout(function () {
+            c.clearRect(coords.x * SIZE, coords.y * SIZE, SIZE, SIZE);
+        }, delay)
     };
-
 
     var SIZE = 3;
     var ws = new SockJS('http://localhost:8888/ws'),
         $message = $('#message'),
         canvas = document.getElementById('Canvas'),
         canvasOverlay = document.getElementById('CanvasOverlay'),
-        ctx = canvas.getContext('2d');
+        ctx = canvas.getContext('2d'),
         overlayCtx = canvasOverlay.getContext('2d');
 
-    $('#evolve').click(function (ev) {ws.send(JSON.stringify({action: 'evolve'}));});
-    $('#reset').click(function (ev) {ws.send(JSON.stringify({action: 'reset'}));});
-    $('#start').click(function (ev) {ws.send(JSON.stringify({action: 'start'}));});
-    $('#pause').click(function (ev) {ws.send(JSON.stringify({action: 'pause'}));});
-    $('#random').click(function (ev) {ws.send(JSON.stringify({action: 'random'}));});
+    ctx.imageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    overlayCtx.imageSmoothingEnabled = false;
+    overlayCtx.mozImageSmoothingEnabled = false;
+
+    $('#evolve').click(function (ev) {
+        ws.send(JSON.stringify({action: 'evolve'}));
+    });
+    $('#reset').click(function (ev) {
+        ws.send(JSON.stringify({action: 'reset'}));
+    });
+    $('#start').click(function (ev) {
+        ws.send(JSON.stringify({action: 'start'}));
+    });
+    $('#pause').click(function (ev) {
+        ws.send(JSON.stringify({action: 'pause'}));
+    });
+    $('#random').click(function (ev) {
+        ws.send(JSON.stringify({action: 'random'}));
+    });
 
     ws.onopen = function () {
         $message.attr("class", 'label label-success');
@@ -33,7 +51,8 @@ $(document).ready(function () {
     };
 
     ws.onmessage = function (ev) {
-        redraw_world(JSON.parse(ev.data))
+        WORLD = JSON.parse(ev.data);
+        redraw_world(WORLD)
     };
 
     ws.onclose = function (ev) {
@@ -48,15 +67,21 @@ $(document).ready(function () {
 
 
     var redraw_world = function (json) {
-        var check_canvas_size = function(json){
+        var check_canvas_size = function (json) {
             var height = (json.length + 1) * SIZE,
                 width = (json[0].length + 1) * SIZE;
 
-            if (width == canvas.width && height == canvas.height){
+            if (
+                width == canvas.width &&
+                height == canvas.height &&
+                width == $(canvas.parentElement).width()
+            ) {
                 return false
             }
             canvasOverlay.height = canvas.height = height;
             canvasOverlay.width = canvas.width = width;
+            $(canvas.parentElement).width(width);
+
         };
 
         check_canvas_size(json);
@@ -69,29 +94,35 @@ $(document).ready(function () {
         }
     };
 
-    $(canvasOverlay).click(function(event){
-        console.log(get_ev_coords_on_canvas(event, canvasOverlay))
-    });
-
-    $(canvasOverlay).mousemove(function(event){
+    $(canvasOverlay).click(function (event) {
         var coords = get_ev_coords_on_canvas(event, canvasOverlay);
-        overlayCtx.fillStyle = "#3AE0E7";
-        overlayCtx.fillRect(coords.x * SIZE, coords.y * SIZE, SIZE, SIZE);
-        setTimeout(function(){
-            overlayCtx.clearRect(coords.x * SIZE, coords.y * SIZE, SIZE, SIZE);
-        }, 300)
-    });
-
-    $('body').on('click', '#world .cell', function (ev) {
-        var $cell = $(this);
         ws.send(JSON.stringify({
             action: 'set_cell',
             data: {
-                active: $cell.hasClass('active') ? 0 : 1,
-                x: $cell.data().x,
-                y: $cell.data().y
+                active: WORLD[coords.y][coords.x] ? 0 : 1,
+                x: coords.x,
+                y: coords.y
             }
 
-        }))
+        }));
+        var stub = [
+            {x: coords.x - 2, y: coords.y},
+            {x: coords.x - 1, y: coords.y},
+            {x: coords.x + 1, y: coords.y},
+            {x: coords.x, y: coords.y + 2},
+            {x: coords.x, y: coords.y - 2},
+            {x: coords.x, y: coords.y - 1},
+            {x: coords.x, y: coords.y + 1},
+            {x: coords.x, y: coords.y + 2}
+        ];
+        _.each(stub, function(coords, num){
+            draw_with_cleanup(overlayCtx, coords, "#3AE0E7", 500 + 100 * num);
+        });
+
+    });
+
+    $(canvasOverlay).mousemove(function (event) {
+        var coords = get_ev_coords_on_canvas(event, canvasOverlay);
+        draw_with_cleanup(overlayCtx, coords, "#3AE0E7", 300);
     });
 });

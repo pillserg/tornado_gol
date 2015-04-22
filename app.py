@@ -14,8 +14,8 @@ logging.basicConfig()
 log.setLevel('DEBUG')
 
 clients = []
-width = 200
-height = 50
+width = 150
+height = 70
 INTERVAL = 5
 
 

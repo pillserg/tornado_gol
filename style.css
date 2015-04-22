@@ -44,7 +44,6 @@ h2 {
     cursor: cell;
 }
 
-
 #Canvas {
     cursor: crosshair
 }
@@ -60,4 +59,25 @@ h2 {
 
 .container {
     text-align: center;
+}
+
+.canvas-wrapper {
+    position: relative;
+    text-align: center;
+    margin: auto;
+}
+
+#Canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+}
+
+#CanvasOverlay {
+    position: absolute;
+    cursor: crosshair;
+    left: 0;
+    top: 0;
+    z-index: 1;
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>tornado WebSocket example</title>
+  <title>pill's game of life</title>
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="static/style.css">
 
@@ -15,9 +15,9 @@
 </head>
 <body>
   <div class="container">
-    <h1>tornado WebSocket G_O_L</h1>
+    <h1>gol</h1>
     <hr>
-      WebSocket status : <span id="message"></span>
+      status : <span id="message"></span>
     <hr>
     <button id="evolve">Evolve</button>
     <button id="reset">Noah's Flood</button>
@@ -26,16 +26,10 @@
     <button id="pause">Pause</button>
 
     <hr class="clear"/>
-    <div class='center' style="position: relative;">
-      <canvas id="Canvas" width="1" height="1"
-        style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
-      <canvas id="CanvasOverlay" width="1" height="1"
-        style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+    <div class='canvas-wrapper'>
+      <canvas id="Canvas"></canvas>
+      <canvas id="CanvasOverlay"></canvas>
     </div>
   </div>
-
-  <script>
-
-  </script>
 </body>
 </html>
