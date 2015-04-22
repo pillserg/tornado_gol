@@ -1,5 +1,19 @@
 $(document).ready(function () {
-    var WORLD = [];
+    var WORLD = [],
+        SIZE = 3,
+        ws = new SockJS('http://localhost:8888/ws'),
+        $message = $('#message'),
+        $users = $('#users'),
+        canvas = document.getElementById('Canvas'),
+        canvasOverlay = document.getElementById('CanvasOverlay'),
+        ctx = canvas.getContext('2d'),
+        overlayCtx = canvasOverlay.getContext('2d');
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    overlayCtx.imageSmoothingEnabled = false;
+    overlayCtx.mozImageSmoothingEnabled = false;
+
     var get_ev_coords_on_canvas = function (event, canvas) {
         var coords = canvas.relMouseCoords(event);
         return {
@@ -16,32 +30,19 @@ $(document).ready(function () {
         }, delay)
     };
 
-    var SIZE = 3;
-    var ws = new SockJS('http://localhost:8888/ws'),
-        $message = $('#message'),
-        canvas = document.getElementById('Canvas'),
-        canvasOverlay = document.getElementById('CanvasOverlay'),
-        ctx = canvas.getContext('2d'),
-        overlayCtx = canvasOverlay.getContext('2d');
-
-    ctx.imageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
-    overlayCtx.imageSmoothingEnabled = false;
-    overlayCtx.mozImageSmoothingEnabled = false;
-
-    $('#evolve').click(function (ev) {
+    $('.btn-evolve').click(function (ev) {
         ws.send(JSON.stringify({action: 'evolve'}));
     });
-    $('#reset').click(function (ev) {
+    $('.btn-reset').click(function (ev) {
         ws.send(JSON.stringify({action: 'reset'}));
     });
-    $('#start').click(function (ev) {
+    $('.btn-start').click(function (ev) {
         ws.send(JSON.stringify({action: 'start'}));
     });
-    $('#pause').click(function (ev) {
+    $('.btn-pause').click(function (ev) {
         ws.send(JSON.stringify({action: 'pause'}));
     });
-    $('#random').click(function (ev) {
+    $('.btn-random').click(function (ev) {
         ws.send(JSON.stringify({action: 'random'}));
     });
 
@@ -51,8 +52,15 @@ $(document).ready(function () {
     };
 
     ws.onmessage = function (ev) {
-        WORLD = JSON.parse(ev.data);
-        redraw_world(WORLD)
+        var data = JSON.parse(ev.data);
+        if (data.type == 'world') {
+            WORLD = data.data;
+            redraw_world(WORLD)
+        } else if (data.type == 'users') {
+            $users.text(data.data)
+        } else {
+            console.warn('wrong mesage: ', data)
+        }
     };
 
     ws.onclose = function (ev) {
@@ -115,7 +123,7 @@ $(document).ready(function () {
             {x: coords.x, y: coords.y + 1},
             {x: coords.x, y: coords.y + 2}
         ];
-        _.each(stub, function(coords, num){
+        _.each(stub, function (coords, num) {
             draw_with_cleanup(overlayCtx, coords, "#3AE0E7", 500 + 100 * num);
         });
 

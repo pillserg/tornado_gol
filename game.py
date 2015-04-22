@@ -49,7 +49,7 @@ class World(object):
         self.cells[mutant_cell['y']][mutant_cell['x']] = mutant_cell['active']
 
     def dump_world(self):
-        return json.dumps(self.cells)
+        return self.cells
 
     def reset_world(self):
         self._populate()

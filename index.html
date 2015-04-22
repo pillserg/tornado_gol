@@ -4,6 +4,7 @@
   <title>pill's game of life</title>
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="static/style.css">
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
 
   <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
@@ -15,16 +16,17 @@
 </head>
 <body>
   <div class="container">
-    <h1>gol</h1>
     <hr>
+      <h5>ConvaysGameOfLife tornado_edition</h5>
+      <br/>
       status : <span id="message"></span>
+      users:  <span id="users"></span>
     <hr>
-    <button id="evolve">Evolve</button>
-    <button id="reset">Noah's Flood</button>
-    <button id="random">Random</button>
-    <button id="start">Start</button>
-    <button id="pause">Pause</button>
-
+    <button class="btn btn-default btn-evolve">Evolve</button>
+    <button class="btn btn-default btn-reset">Noah's Flood</button>
+    <button class="btn btn-default btn-random">Random</button>
+    <button class="btn btn-default btn-start">Start</button>
+    <button class="btn btn-default btn-pause">Pause</button>
     <hr class="clear"/>
     <div class='canvas-wrapper'>
       <canvas id="Canvas"></canvas>

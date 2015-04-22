@@ -19,6 +19,10 @@ height = 70
 INTERVAL = 5
 
 
+def make_msg(type, data):
+    return json.dumps({'type': type, 'data': data})
+
+
 class IndexHandler(web.RequestHandler):
     def get(self):
         log.info(self.request)
@@ -51,11 +55,13 @@ class SocketHandler(SockJSConnection):
     def on_open(self, info):
         if self not in clients:
             clients.append(self)
-        self.send(world.dump_world())
+        self.send(make_msg('world', world.dump_world()))
+        self.broadcast(clients, make_msg('users', len(clients)))
 
     def on_close(self):
         if self in clients:
             clients.remove(self)
+        self.broadcast(clients, make_msg('users', len(clients)))
 
 
 def send_msg(client, msg):
@@ -67,14 +73,14 @@ def evolve_world(world, clients, mutant_cell=None):
         world.mutate(mutant_cell)
 
     world.evolve()
-    clients and clients[0].broadcast(clients, world.dump_world())
+    clients and clients[0].broadcast(clients, make_msg('world', world.dump_world()))
 
 
 def reset_world(world, clients):
     log.info('Reseting world at age: {0}'.format(world.age))
     world.reset_world()
     for client in clients:
-        client.send(world.dump_world())
+        client.send(make_msg('world', world.dump_world()))
 
 
 handlers = [
