@@ -26,7 +26,7 @@ def make_msg(type, data):
 class IndexHandler(web.RequestHandler):
     def get(self):
         log.info(self.request)
-        self.render('index.html', width=width, height=height)
+        self.render('templates/index.html', width=width, height=height)
 
 
 class SocketHandler(SockJSConnection):
@@ -85,7 +85,7 @@ def reset_world(world, clients):
 
 handlers = [
     (r'/', IndexHandler),
-    (r'/static/(.*)', web.StaticFileHandler, {'path': './'}),
+    (r'/static/(.*)', web.StaticFileHandler, {'path': './static/'}),
 ] + SockJSRouter(SocketHandler, '/ws').urls
 
 

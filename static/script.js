@@ -1,7 +1,7 @@
 $(document).ready(function () {
     var WORLD = [],
         SIZE = 3,
-        ws = new SockJS('http://localhost:8888/ws'),
+        ws = new SockJS('/ws'),
         $message = $('#message'),
         $users = $('#users'),
         canvas = document.getElementById('Canvas'),
